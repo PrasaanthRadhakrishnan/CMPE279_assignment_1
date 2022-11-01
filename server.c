@@ -63,10 +63,7 @@ int main(int argc, char const *argv[])
 
     // adding additional code for assignment
     // Getting the user id for nobody
-    p = getpwnam(user);
-    val = setuid(p->pw_uid);
-    printf("pw_uid : %d \n", val);
-
+    
     // Doing the fork process
     pid_t forked_process = fork();
     if (forked_process < 0)
@@ -77,6 +74,10 @@ int main(int argc, char const *argv[])
     //Dropping priviliges for nobody
     else if (forked_process == 0)
     {
+	p = getpwnam(user);
+	val = setuid(p->pw_uid);
+	printf("pw_uid : %d \n", p->pw_uid);
+	printf("after setuid : %d \n", val);
 	//using setuid to drop priviliges for nobody
 	if (val == -1)
 	{
