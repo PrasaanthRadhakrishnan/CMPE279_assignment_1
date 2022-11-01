@@ -19,9 +19,7 @@ int main(int argc, char const *argv[])
     int addrlen = sizeof(address);
     char buffer[102] = {0};
     char *hello = "Hello from server";
-    struct passwd* p;
-    char user[] = "nobody";
-    int val;
+    struct passwd* pwd;
     printf("execve=0x%p\n", execve);
 
     // Creating socket file descriptor
@@ -65,21 +63,25 @@ int main(int argc, char const *argv[])
     // Getting the user id for nobody
     
     // Doing the fork process
-    pid_t forked_process = fork();
+    printf("Before fork %d \n", getuid());
+    pid_t forked_process, pid;
+    forked_process = fork();
+    printf("forked_process: %d \n",forked_process);
     if (forked_process < 0)
     {
 	perror("Forking process failed");
 	exit(EXIT_FAILURE);
     }
     //Dropping priviliges for nobody
-    else if (forked_process == 0)
+    if (forked_process == 0)
     {
-	p = getpwnam(user);
-	val = setuid(p->pw_uid);
-	printf("pw_uid : %d \n", p->pw_uid);
-	printf("after setuid : %d \n", val);
+	printf("forking successful \n");
+	pwd = getpwnam("nobody");
+	pid = setuid(pwd->pw_uid);
+	printf("child_uid : %d \n", getuid());
+	printf("after setuid : %d \n", pid);
 	//using setuid to drop priviliges for nobody
-	if (val == -1)
+	if (pid == -1)
 	{
 	    perror("privilige drop failure");
 	    exit(EXIT_FAILURE);
@@ -88,11 +90,6 @@ int main(int argc, char const *argv[])
     	printf("%s\n",buffer);
     	send(new_socket , hello , strlen(hello) , 0 );
     	printf("Hello message sent\n");
-    }
-    else
-    {
-        int status = 0;
-        while((wait(&status)) > 0);
     }
     return 0;
 }
