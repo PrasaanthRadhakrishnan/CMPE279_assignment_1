@@ -3,9 +3,11 @@
 #include <sys/socket.h> 
 #include <stdlib.h> 
 #include <netinet/in.h> 
-#include <string.h> 
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 #define PORT 8080 
-   
+  
 int main(int argc, char const *argv[]) 
 { 
     struct sockaddr_in address; 
@@ -30,7 +32,7 @@ int main(int argc, char const *argv[])
         printf("\nInvalid address/ Address not supported \n"); 
         return -1; 
     } 
-   
+  
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
     { 
         printf("\nConnection Failed \n"); 
@@ -41,4 +43,4 @@ int main(int argc, char const *argv[])
     valread = read( sock , buffer, 1024); 
     printf("%s\n",buffer ); 
     return 0; 
-} 
+}

@@ -6,8 +6,11 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <pwd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-#define PORT 80
+#define PORT 8080
 int main(int argc, char const *argv[])
 {
     int server_fd, new_socket, valread;
@@ -16,7 +19,9 @@ int main(int argc, char const *argv[])
     int addrlen = sizeof(address);
     char buffer[102] = {0};
     char *hello = "Hello from server";
-
+    struct passwd* p;
+    char user[] = "nobody";
+    int val;
     printf("execve=0x%p\n", execve);
 
     // Creating socket file descriptor
@@ -55,9 +60,38 @@ int main(int argc, char const *argv[])
         perror("accept");
         exit(EXIT_FAILURE);
     }
-    valread = read( new_socket , buffer, 1024);
-    printf("%s\n",buffer );
-    send(new_socket , hello , strlen(hello) , 0 );
-    printf("Hello message sent\n");
+
+    // adding additional code for assignment
+    // Getting the user id for nobody
+    p = getpwnam(user);
+    val = setuid(p->pw_uid);
+    printf("pw_uid : %d \n", val);
+
+    // Doing the fork process
+    pid_t forked_process = fork();
+    if (forked_process < 0)
+    {
+	perror("Forking process failed");
+	exit(EXIT_FAILURE);
+    }
+    //Dropping priviliges for nobody
+    else if (forked_process == 0)
+    {
+	//using setuid to drop priviliges for nobody
+	if (val == -1)
+	{
+	    perror("privilige drop failure");
+	    exit(EXIT_FAILURE);
+	}
+    	valread = read( new_socket , buffer, 1024);
+    	printf("%s\n",buffer);
+    	send(new_socket , hello , strlen(hello) , 0 );
+    	printf("Hello message sent\n");
+    }
+    else
+    {
+        int status = 0;
+        while((wait(&status)) > 0);
+    }
     return 0;
 }
