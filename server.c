@@ -63,33 +63,34 @@ int main(int argc, char const *argv[])
     // Getting the user id for nobody
     
     // Doing the fork process
-    printf("Before fork %d \n", getuid());
+    printf("before fork %d \n", getuid());
     pid_t forked_process, pid;
     forked_process = fork();
     printf("forked_process: %d \n",forked_process);
     if (forked_process < 0)
     {
-	perror("Forking process failed");
+	perror("forking process failed");
 	exit(EXIT_FAILURE);
     }
     //Dropping priviliges for nobody
     if (forked_process == 0)
     {
 	printf("forking successful \n");
+	//using setuid to drop priviliges for nobody user
 	pwd = getpwnam("nobody");
 	pid = setuid(pwd->pw_uid);
 	printf("child_uid : %d \n", getuid());
+	printf("nobody_uid : %d \n", pwd->pw_uid);
 	printf("after setuid : %d \n", pid);
-	//using setuid to drop priviliges for nobody
 	if (pid == -1)
 	{
-	    perror("privilige drop failure");
+	    perror("privilege drop failure");
 	    exit(EXIT_FAILURE);
 	}
     	valread = read( new_socket , buffer, 1024);
     	printf("%s\n",buffer);
     	send(new_socket , hello , strlen(hello) , 0 );
     	printf("Hello message sent\n");
-    }
+    }	
     return 0;
 }
