@@ -14,6 +14,7 @@
 
 int set_socket_func();
 void message_func(const char* new_sock);
+void exec_func(int new_sock);
 
 int main(int argc, char const *argv[])
 {
@@ -23,18 +24,20 @@ int main(int argc, char const *argv[])
     //int addrlen = sizeof(address);
 
     //int valread;
+	if(argc == 1){
+		
     int new_socket = set_socket_func();
 	
     //char buffer[102] = {0};
     //char *hello = "Hello from server";
-    struct passwd* pwd;
+    
     
     // adding additional code for assignment
     // Getting the user id for nobody
     
     // Doing the fork process
     //printf("before fork %d \n", getuid());
-    pid_t forked_process, pid;
+    pid_t forked_process;
     forked_process = fork();
     printf("forked_process: %d \n",forked_process);
     if (forked_process < 0)
@@ -45,9 +48,15 @@ int main(int argc, char const *argv[])
     //Dropping priviliges for nobody
     if (forked_process == 0)
     {
-	printf("forking successful \n");
+	printf("forking successful, in child process now \n");
+	exec_func(new_socket);
+	}
+	}
+	else{
 	//using setuid to drop priviliges for nobody user
+	struct passwd* pwd;
 	pwd = getpwnam("nobody");
+	int pid;
 	pid = setuid(pwd->pw_uid);
 	printf("child_uid : %d \n", getuid());
 	printf("nobody_uid : %d \n", pwd->pw_uid);
@@ -65,7 +74,6 @@ int main(int argc, char const *argv[])
     	//send(new_socket , hello , strlen(hello) , 0 );
     	//printf("Hello message sent\n");
     }	
-    return 0;
 	}
 }
 
@@ -127,4 +135,16 @@ void message_func(const char* new_sock){
     printf("%s\n",buffer);
     send(new_socket , hello , strlen(hello) , 0 );
     printf("Hello message sent\n");
+}
+
+//Adding the exec function
+void exec_func(int new_sock){
+    char sock_id_str[12];
+    //socket id as string 
+    sprintf(sock_id_str, "%d", new_sock);
+    char *args[] = {"./server", sock_id_str, NULL}; //socket id passed as env variable
+                                                     
+    if (execvp(args[0], args) < 0) { 
+        printf("Exec func failed \n");
+    };
 }
