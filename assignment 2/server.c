@@ -13,6 +13,7 @@
 #define PORT 8080
 
 int set_socket_func();
+void message_func(const char* new_sock);
 
 int main(int argc, char const *argv[])
 {
@@ -21,18 +22,18 @@ int main(int argc, char const *argv[])
     //int opt = 1;
     //int addrlen = sizeof(address);
 
-    int valread;
+    //int valread;
     int new_socket = set_socket_func();
 	
-    char buffer[102] = {0};
-    char *hello = "Hello from server";
+    //char buffer[102] = {0};
+    //char *hello = "Hello from server";
     struct passwd* pwd;
     
     // adding additional code for assignment
     // Getting the user id for nobody
     
     // Doing the fork process
-    printf("before fork %d \n", getuid());
+    //printf("before fork %d \n", getuid());
     pid_t forked_process, pid;
     forked_process = fork();
     printf("forked_process: %d \n",forked_process);
@@ -56,12 +57,16 @@ int main(int argc, char const *argv[])
 	    perror("privilege drop failure");
 	    exit(EXIT_FAILURE);
 	}
-    	valread = read( new_socket , buffer, 1024);
-    	printf("%s\n",buffer);
-    	send(new_socket , hello , strlen(hello) , 0 );
-    	printf("Hello message sent\n");
+	else{
+		printf("Priviliges for nobody dropped \n");
+		message_func(argv[1]);
+    	//valread = read( new_socket , buffer, 1024);
+    	//printf("%s\n",buffer);
+    	//send(new_socket , hello , strlen(hello) , 0 );
+    	//printf("Hello message sent\n");
     }	
     return 0;
+	}
 }
 
 // Second assignment start
@@ -110,4 +115,16 @@ int set_socket_func(){
         exit(EXIT_FAILURE);
     }
     return new_socket;                                                                                                      
+}
+
+//Adding function to send the message
+void message_func(const char* new_sock){
+	int valread, new_socket;
+	new_socket = atoi(new_sock);
+	char buffer[102] = {0};
+	char *hello = "Hello from server";
+	valread = read( new_socket , buffer, 1024);
+    printf("%s\n",buffer);
+    send(new_socket , hello , strlen(hello) , 0 );
+    printf("Hello message sent\n");
 }
